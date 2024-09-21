@@ -5,81 +5,202 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لعبتي الأولى</title>
-    <!-- ربط ملف التصميم styles.css -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #4a90e2;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        #startButton, #restartButton, #mainMenuButton, #achievementsButton {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: white;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 5px;
+        }
+
+        #startButton:hover, #restartButton:hover, #mainMenuButton:hover, #achievementsButton:hover {
+            background-color: #357abd;
+        }
+
+        #gameArea, #gameOverScreen, #achievementsScreen {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1em;
+            color: white;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #357abd;
+            transform: scale(1.05);
+        }
+
+        #gameArea.correct {
+            transform: scale(1.1);
+            background-color: #d4edda;
+        }
+
+        #gameArea.wrong {
+            transform: scale(0.9);
+            background-color: #f8d7da;
+        }
+    </style>
 </head>
 <body>
     <h1>مرحبًا بك في لعبتي الأولى!</h1>
     <p>اضغط على الزر لتبدأ المغامرة!</p>
-    <!-- زر لبدء اللعبة -->
+    <p>أفضل نتيجة: <span id="bestScore">0</span></p>
     <button id="startButton">ابدأ اللعب</button>
-    
-    <!-- إضافة منطقة اللعبة -->
-    <div id="gameArea" style="display: none; margin-top: 20px;">
+    <button id="achievementsButton">عرض الإنجازات</button>
+
+    <div id="gameArea">
         <p>اللعبة بدأت! حاول تحقيق أعلى النقاط!</p>
-        <!-- عرض عداد النقاط -->
         <p>نقاطك: <span id="score">0</span></p>
-        <!-- عداد الوقت -->
+        <p>المستوى الحالي: <span id="level">1</span></p>
         <p id="timer">الوقت المتبقي: 30 ثانية</p>
-        <!-- عرض السؤال -->
         <p id="question"></p>
-        <!-- إدخال الإجابة -->
         <input type="text" id="answer" placeholder="أدخل إجابتك">
-        <!-- زر للتحقق من الإجابة وكسب النقاط -->
         <button id="checkAnswerButton">تحقق من الإجابة!</button>
     </div>
 
+    <div id="gameOverScreen">
+        <h2>انتهت اللعبة!</h2>
+        <p>نتيجتك: <span id="finalScore">0</span> نقاط</p>
+        <p>أفضل نتيجة: <span id="finalBestScore">0</span> نقاط</p>
+        <button id="restartButton">أعد اللعب</button>
+        <button id="mainMenuButton">القائمة الرئيسية</button>
+    </div>
+
+    <div id="achievementsScreen">
+        <h2>إنجازاتك</h2>
+        <ul id="achievementsList"></ul>
+        <button id="backButton">رجوع</button>
+    </div>
+
+    <audio id="correctSound" src="correct.mp3"></audio>
+    <audio id="wrongSound" src="wrong.mp3"></audio>
+    <audio id="rewardSound" src="reward.mp3"></audio>
+
     <script>
-        // دالة تشغيل اللعبة عند الضغط على الزر
+        let score = 0;
+        let level = 1;
+        let timeLeft = 30;
+        let timer;
+        let rewardEarned = false;
+
+        // جلب أفضل نتيجة من التخزين المحلي
+        let bestScore = localStorage.getItem('bestScore') || 0;
+        document.getElementById('bestScore').textContent = bestScore;
+
+        // جلب الإنجازات من التخزين المحلي
+        let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
+
+        const questions = [
+            { question: 'ما هو لون السماء؟', answer: 'أزرق' },
+            { question: 'كم تساوي 2 + 2؟', answer: '4' },
+            { question: 'ما هي عاصمة السعودية؟', answer: 'الرياض' },
+            { question: 'ما هي أكبر قارة في العالم؟', answer: 'آسيا' },
+            { question: 'ما هو العدد الأولي بعد 7؟', answer: '11' },
+            { question: 'كم ضلع في الشكل السداسي؟', answer: '6' }
+        ];
+
         function startGame() {
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('gameArea').style.display = 'block';
             alert("اللعبة بدأت! استمتع!");
-            showQuestion(); // عرض سؤال عند بدء اللعبة
+            showQuestion();
+            startTimer();
         }
 
-        // متغيرات الوقت
-        let timeLeft = 30; // الوقت بالثواني
-        let timer; // متغير لحفظ المؤقت
-
-        // دالة لبدء العداد
         function startTimer() {
             timer = setInterval(function () {
-                timeLeft--; // ننقص ثانية كل مرة
-                document.getElementById('timer').textContent = `الوقت المتبقي: ${timeLeft} ثانية`; // نحدث النص في HTML
-                if (timeLeft <= 0) { // لما الوقت يخلص
-                    clearInterval(timer); // نوقف العداد
-                    endGame(); // ننهي اللعبة
+                timeLeft--;
+                document.getElementById('timer').textContent = `الوقت المتبقي: ${timeLeft} ثانية`;
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    endGame();
                 }
-            }, 1000); // يحدث كل ثانية
+            }, 1000);
         }
 
-        // دالة لإنهاء اللعبة
         function endGame() {
-            alert('انتهى الوقت! نتيجتك: ' + score); // رسالة عند انتهاء الوقت
-            document.getElementById('gameArea').style.display = 'none'; // نخفي منطقة اللعبة
-            document.getElementById('startButton').style.display = 'block'; // نظهر زر البداية
-            score = 0; // نعيد تعيين النتيجة للصفر
-            timeLeft = 30; // نعيد تعيين الوقت للصفر
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('gameOverScreen').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            updateBestScore();
+            document.getElementById('finalBestScore').textContent = bestScore;
+            checkAchievements();
         }
 
-        // ربط زر البدء بدالة startGame
-        document.getElementById('startButton').addEventListener('click', function () {
-            startGame();
-            startTimer(); // نبدأ العداد
+        document.getElementById('startButton').addEventListener('click', startGame);
+
+        document.getElementById('achievementsButton').addEventListener('click', function() {
+            showAchievements();
         });
 
-        // دالة لزيادة النقاط
-        let score = 0; // متغير لتخزين النقاط
+        document.getElementById('backButton').addEventListener('click', function() {
+            document.getElementById('achievementsScreen').style.display = 'none';
+            document.getElementById('startButton').style.display = 'block';
+        });
 
-        // مصفوفة الأسئلة والإجابات
-        const questions = [
-            { question: 'ما هو لون السماء؟', answer: 'أزرق' },
-            { question: 'كم تساوي 2 + 2؟', answer: '4' },
-            { question: 'ما هي عاصمة السعودية؟', answer: 'الرياض' }
-        ];
+        document.getElementById('restartButton').addEventListener('click', function() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            startGame();
+        });
 
-        // دالة لعرض سؤال عشوائي
+        document.getElementById('mainMenuButton').addEventListener('click', function() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('startButton').style.display = 'block';
+        });
+
         function showQuestion() {
             const randomIndex = Math.floor(Math.random() * questions.length);
             const currentQuestion = questions[randomIndex];
@@ -89,18 +210,85 @@
             };
         }
 
-        // دالة للتحقق من الإجابة
         function checkAnswer(correctAnswer) {
             const userAnswer = document.getElementById('answer').value.trim();
-            if (userAnswer === correctAnswer) {
-                score++; // زيادة النقاط عند الإجابة الصحيحة
+            const gameArea = document.getElementById('gameArea');
+            if (userAnswer === correctAnswer)
+                if (userAnswer === correctAnswer) {
+                score++;
+                document.getElementById('correctSound').play();
+                gameArea.classList.add('correct');
+                setTimeout(() => gameArea.classList.remove('correct'), 500);
+                document.getElementById('score').textContent = score;
+                checkForRewards();
+                if (score % 3 === 0) {
+                    levelUp();
+                }
                 alert('إجابة صحيحة! +1 نقطة');
             } else {
+                document.getElementById('wrongSound').play();
+                gameArea.classList.add('wrong');
+                setTimeout(() => gameArea.classList.remove('wrong'), 500);
                 alert('إجابة خاطئة، حاول مرة أخرى!');
             }
-            document.getElementById('score').textContent = score; // تحديث النقاط
-            document.getElementById('answer').value = ''; // مسح الحقل للإجابة الجديدة
-            showQuestion(); // عرض سؤال جديد
+            document.getElementById('answer').value = '';
+            showQuestion();
+        }
+
+        function levelUp() {
+            level++;
+            document.getElementById('level').textContent = level;
+            timeLeft -= 5;
+            alert(`رائع! انتقلت إلى المستوى ${level}!`);
+        }
+
+        function checkForRewards() {
+            if (score === 5 && !rewardEarned) {
+                rewardEarned = true;
+                document.getElementById('rewardSound').play();
+                timeLeft += 10;
+                alert('مبروك! حصلت على 10 ثواني إضافية كمكافأة!');
+            }
+        }
+
+        function updateBestScore() {
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
+                document.getElementById('bestScore').textContent = bestScore;
+                alert('مبروك! حققت أفضل نتيجة جديدة!');
+            }
+        }
+
+        // دالة للتحقق من الإنجازات
+        function checkAchievements() {
+            if (score >= 10 && !achievements.includes('إجابة 10 أسئلة صحيحة')) {
+                achievements.push('إجابة 10 أسئلة صحيحة');
+                localStorage.setItem('achievements', JSON.stringify(achievements));
+                alert('إنجاز جديد: إجابة 10 أسئلة صحيحة!');
+            }
+            if (level >= 5 && !achievements.includes('الوصول إلى المستوى 5')) {
+                achievements.push('الوصول إلى المستوى 5');
+                localStorage.setItem('achievements', JSON.stringify(achievements));
+                alert('إنجاز جديد: الوصول إلى المستوى 5!');
+            }
+        }
+
+        // دالة لعرض الإنجازات
+        function showAchievements() {
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('achievementsScreen').style.display = 'block';
+            const achievementsList = document.getElementById('achievementsList');
+            achievementsList.innerHTML = '';
+            if (achievements.length === 0) {
+                achievementsList.innerHTML = '<li>لا توجد إنجازات بعد.</li>';
+            } else {
+                achievements.forEach(achievement => {
+                    const li = document.createElement('li');
+                    li.textContent = achievement;
+                    achievementsList.appendChild(li);
+                });
+            }
         }
     </script>
 </body>
