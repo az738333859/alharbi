@@ -21,19 +21,21 @@
         <p>نقاطك: <span id="score">0</span></p>
         <!-- عداد الوقت -->
         <p id="timer">الوقت المتبقي: 30 ثانية</p>
-        <!-- زر للحصول على النقاط -->
-        <button id="scoreButton">احصل على نقطة!</button>
+        <!-- عرض السؤال -->
+        <p id="question"></p>
+        <!-- إدخال الإجابة -->
+        <input type="text" id="answer" placeholder="أدخل إجابتك">
+        <!-- زر للتحقق من الإجابة وكسب النقاط -->
+        <button id="checkAnswerButton">تحقق من الإجابة!</button>
     </div>
 
     <script>
         // دالة تشغيل اللعبة عند الضغط على الزر
         function startGame() {
-            // إخفاء الزر بعد الضغط
             document.getElementById('startButton').style.display = 'none';
-            // إظهار منطقة اللعبة
             document.getElementById('gameArea').style.display = 'block';
-            // رسالة تنبيه ببدء اللعبة
             alert("اللعبة بدأت! استمتع!");
+            showQuestion(); // عرض سؤال عند بدء اللعبة
         }
 
         // متغيرات الوقت
@@ -69,10 +71,37 @@
 
         // دالة لزيادة النقاط
         let score = 0; // متغير لتخزين النقاط
-        document.getElementById('scoreButton').addEventListener('click', function() {
-            score++; // زيادة النقاط بواحد كل مرة يتم فيها الضغط على الزر
-            document.getElementById('score').textContent = score; // تحديث النص لعرض النقاط الجديدة
-        });
+
+        // مصفوفة الأسئلة والإجابات
+        const questions = [
+            { question: 'ما هو لون السماء؟', answer: 'أزرق' },
+            { question: 'كم تساوي 2 + 2؟', answer: '4' },
+            { question: 'ما هي عاصمة السعودية؟', answer: 'الرياض' }
+        ];
+
+        // دالة لعرض سؤال عشوائي
+        function showQuestion() {
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            const currentQuestion = questions[randomIndex];
+            document.getElementById('question').textContent = currentQuestion.question;
+            document.getElementById('checkAnswerButton').onclick = function() {
+                checkAnswer(currentQuestion.answer);
+            };
+        }
+
+        // دالة للتحقق من الإجابة
+        function checkAnswer(correctAnswer) {
+            const userAnswer = document.getElementById('answer').value.trim();
+            if (userAnswer === correctAnswer) {
+                score++; // زيادة النقاط عند الإجابة الصحيحة
+                alert('إجابة صحيحة! +1 نقطة');
+            } else {
+                alert('إجابة خاطئة، حاول مرة أخرى!');
+            }
+            document.getElementById('score').textContent = score; // تحديث النقاط
+            document.getElementById('answer').value = ''; // مسح الحقل للإجابة الجديدة
+            showQuestion(); // عرض سؤال جديد
+        }
     </script>
 </body>
 </html>
