@@ -1,6 +1,3 @@
-
-
-
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -14,12 +11,28 @@
 <body>
     <h1>مرحبًا بك في لعبتي الأولى!</h1>
     <p>اضغط على الزر لتبدأ المغامرة!</p>
-    <button onclick="startGame()">ابدأ اللعب</button>
+    <!-- زر لبدء اللعبة -->
+    <button id="startButton">ابدأ اللعب</button>
+    
+    <!-- إضافة منطقة اللعبة -->
+    <div id="gameArea" style="display: none; margin-top: 20px;">
+        <p>اللعبة بدأت! حاول تحقيق أعلى النقاط!</p>
+        <!-- هنا ممكن تضيف عناصر أخرى للعبة -->
+    </div>
 
     <script>
+        // دالة تشغيل اللعبة عند الضغط على الزر
         function startGame() {
+            // إخفاء الزر بعد الضغط
+            document.getElementById('startButton').style.display = 'none';
+            // إظهار منطقة اللعبة
+            document.getElementById('gameArea').style.display = 'block';
+            // رسالة تنبيه ببدء اللعبة
             alert("اللعبة بدأت! استمتع!");
         }
+
+        // ربط الزر بالدالة
+        document.getElementById('startButton').addEventListener('click', startGame);
     </script>
 </body>
 </html>
