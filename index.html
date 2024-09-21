@@ -9,7 +9,9 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f8ff;
+            background: linear-gradient(45deg, #6ab1d7, #33d9b2);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -19,15 +21,23 @@
             color: #333;
         }
 
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
-            color: #4a90e2;
+            color: #fff;
+            text-shadow: 1px 1px 5px #000;
         }
 
         p {
             font-size: 1.2em;
             margin-bottom: 10px;
+            color: #fff;
         }
 
         #startButton, #restartButton, #mainMenuButton, #achievementsButton {
@@ -48,7 +58,7 @@
 
         #gameArea, #gameOverScreen, #achievementsScreen {
             display: none;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -92,6 +102,17 @@
             transform: scale(0.9);
             background-color: #f8d7da;
         }
+
+        #musicControl {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -128,6 +149,9 @@
     <audio id="correctSound" src="correct.mp3"></audio>
     <audio id="wrongSound" src="wrong.mp3"></audio>
     <audio id="rewardSound" src="reward.mp3"></audio>
+    <audio id="backgroundMusic" src="background.mp3" loop></audio> <!-- موسيقى الخلفية -->
+
+    <div id="musicControl">🎵</div> <!-- زر التحكم بالموسيقى -->
 
     <script>
         let score = 0;
@@ -136,11 +160,9 @@
         let timer;
         let rewardEarned = false;
 
-        // جلب أفضل نتيجة من التخزين المحلي
         let bestScore = localStorage.getItem('bestScore') || 0;
         document.getElementById('bestScore').textContent = bestScore;
 
-        // جلب الإنجازات من التخزين المحلي
         let achievements = JSON.parse(localStorage.getItem('achievements')) || [];
 
         const questions = [
@@ -158,6 +180,7 @@
             alert("اللعبة بدأت! استمتع!");
             showQuestion();
             startTimer();
+            document.getElementById('backgroundMusic').play(); // تشغيل موسيقى الخلفية عند بدء اللعبة
         }
 
         function startTimer() {
@@ -178,6 +201,7 @@
             updateBestScore();
             document.getElementById('finalBestScore').textContent = bestScore;
             checkAchievements();
+            document.getElementById('backgroundMusic').pause(); // إيقاف الموسيقى عند انتهاء اللعبة
         }
 
         document.getElementById('startButton').addEventListener('click', startGame);
@@ -213,8 +237,7 @@
         function checkAnswer(correctAnswer) {
             const userAnswer = document.getElementById('answer').value.trim();
             const gameArea = document.getElementById('gameArea');
-            if (userAnswer === correctAnswer)
-                if (userAnswer === correctAnswer) {
+            if (userAnswer === correctAnswer) {
                 score++;
                 document.getElementById('correctSound').play();
                 gameArea.classList.add('correct');
@@ -260,7 +283,6 @@
             }
         }
 
-        // دالة للتحقق من الإنجازات
         function checkAchievements() {
             if (score >= 10 && !achievements.includes('إجابة 10 أسئلة صحيحة')) {
                 achievements.push('إجابة 10 أسئلة صحيحة');
@@ -274,7 +296,6 @@
             }
         }
 
-        // دالة لعرض الإنجازات
         function showAchievements() {
             document.getElementById('startButton').style.display = 'none';
             document.getElementById('achievementsScreen').style.display = 'block';
@@ -290,6 +311,22 @@
                 });
             }
         }
+
+        // التحكم في الموسيقى (تشغيل/إيقاف)
+        const musicControl = document.getElementById('musicControl');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        let isMusicPlaying = true;
+
+        musicControl.addEventListener('click', () => {
+            if (isMusicPlaying) {
+                backgroundMusic.pause();
+                musicControl.textContent = '🔇'; // رمز للإيقاف
+            } else {
+                backgroundMusic.play();
+                musicControl.textContent = '🎵'; // رمز للتشغيل
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
     </script>
 </body>
 </html>
