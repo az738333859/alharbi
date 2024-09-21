@@ -19,6 +19,8 @@
         <p>اللعبة بدأت! حاول تحقيق أعلى النقاط!</p>
         <!-- عرض عداد النقاط -->
         <p>نقاطك: <span id="score">0</span></p>
+        <!-- عداد الوقت -->
+        <p id="timer">الوقت المتبقي: 30 ثانية</p>
         <!-- زر للحصول على النقاط -->
         <button id="scoreButton">احصل على نقطة!</button>
     </div>
@@ -34,8 +36,36 @@
             alert("اللعبة بدأت! استمتع!");
         }
 
+        // متغيرات الوقت
+        let timeLeft = 30; // الوقت بالثواني
+        let timer; // متغير لحفظ المؤقت
+
+        // دالة لبدء العداد
+        function startTimer() {
+            timer = setInterval(function () {
+                timeLeft--; // ننقص ثانية كل مرة
+                document.getElementById('timer').textContent = `الوقت المتبقي: ${timeLeft} ثانية`; // نحدث النص في HTML
+                if (timeLeft <= 0) { // لما الوقت يخلص
+                    clearInterval(timer); // نوقف العداد
+                    endGame(); // ننهي اللعبة
+                }
+            }, 1000); // يحدث كل ثانية
+        }
+
+        // دالة لإنهاء اللعبة
+        function endGame() {
+            alert('انتهى الوقت! نتيجتك: ' + score); // رسالة عند انتهاء الوقت
+            document.getElementById('gameArea').style.display = 'none'; // نخفي منطقة اللعبة
+            document.getElementById('startButton').style.display = 'block'; // نظهر زر البداية
+            score = 0; // نعيد تعيين النتيجة للصفر
+            timeLeft = 30; // نعيد تعيين الوقت للصفر
+        }
+
         // ربط زر البدء بدالة startGame
-        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('startButton').addEventListener('click', function () {
+            startGame();
+            startTimer(); // نبدأ العداد
+        });
 
         // دالة لزيادة النقاط
         let score = 0; // متغير لتخزين النقاط
