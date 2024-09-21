@@ -17,7 +17,10 @@
     <!-- إضافة منطقة اللعبة -->
     <div id="gameArea" style="display: none; margin-top: 20px;">
         <p>اللعبة بدأت! حاول تحقيق أعلى النقاط!</p>
-        <!-- هنا ممكن تضيف عناصر أخرى للعبة -->
+        <!-- عرض عداد النقاط -->
+        <p>نقاطك: <span id="score">0</span></p>
+        <!-- زر للحصول على النقاط -->
+        <button id="scoreButton">احصل على نقطة!</button>
     </div>
 
     <script>
@@ -31,8 +34,15 @@
             alert("اللعبة بدأت! استمتع!");
         }
 
-        // ربط الزر بالدالة
+        // ربط زر البدء بدالة startGame
         document.getElementById('startButton').addEventListener('click', startGame);
+
+        // دالة لزيادة النقاط
+        let score = 0; // متغير لتخزين النقاط
+        document.getElementById('scoreButton').addEventListener('click', function() {
+            score++; // زيادة النقاط بواحد كل مرة يتم فيها الضغط على الزر
+            document.getElementById('score').textContent = score; // تحديث النص لعرض النقاط الجديدة
+        });
     </script>
 </body>
 </html>
